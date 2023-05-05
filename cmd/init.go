@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/dukemarty/adr-go/data"
 	"github.com/dukemarty/adr-go/logic"
@@ -43,18 +44,18 @@ var initCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("init called, todos:")
 
+		log.Fatalln("init not fully implemented yet, check existence of adr.json first")
+
 		// 1) Create config file with the provided flags
 		path, _ := cmd.Flags().GetString("path")
 		lang, _ := cmd.Flags().GetString("lang")
 		prefix, _ := cmd.Flags().GetString("prefix")
 		digits, _ := cmd.Flags().GetInt("digits")
-		newConfig := data.NewConfiguration(lang, path, prefix, digits)
+		template, _ := cmd.Flags().GetString("template")
+		newConfig := data.NewConfiguration(lang, path, prefix, digits, template)
 		newConfig.Store(".adr.json")
 
-		// 2) Create adr directory
-		// if err := os.MkdirAll(path, os.ModePerm); err != nil {
-		// 	log.Fatalf("Error when trying to create directory for adr's: %v", err)
-		// }
+		// 2) Create adr directory with standard templates
 		am := logic.NewAdrManager(*newConfig)
 		am.Init()
 
@@ -74,6 +75,7 @@ func init() {
 	initCmd.Flags().StringP("prefix", "x", "", "Prefix for ADR numbers")
 	initCmd.Flags().BoolP("addfirst", "a", true, "add initial adr about using adr's")
 	initCmd.Flags().StringP("lang", "l", "en", "Language used, stored in config file")
+	initCmd.Flags().StringP("template", "t", "template-short.md", "template to use for new ADRs")
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:

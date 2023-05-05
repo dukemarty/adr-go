@@ -47,11 +47,16 @@ func NewAdrManager(config data.Configuration) *AdrManager {
 }
 
 func (am AdrManager) Init() {
+
+	log.Fatalln("Create .adr.json here, not in command")
+
 	if _, err := os.Stat(am.Config.Path); os.IsNotExist(err) {
 		if err := os.MkdirAll(am.Config.Path, os.ModePerm); err != nil {
 			log.Fatalf("Error when trying to create directory for adr's: %v\n", err)
 		}
 	}
+
+	log.Fatalln("Create standard templates as well")
 }
 
 func (am AdrManager) AddAdr(title string) (string, error) {

@@ -15,12 +15,13 @@ type Configuration struct {
 	TemplateName string `json:"template"`
 }
 
-func NewConfiguration(lang string, path string, prefix string, digits int) *Configuration {
+func NewConfiguration(lang string, path string, prefix string, digits int, template string) *Configuration {
 	c := Configuration{
-		Language: lang,
-		Path:     path,
-		Prefix:   prefix,
-		Digits:   digits,
+		Language:     lang,
+		Path:         path,
+		Prefix:       prefix,
+		Digits:       digits,
+		TemplateName: template,
 	}
 
 	return &c

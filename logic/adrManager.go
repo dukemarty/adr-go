@@ -9,18 +9,23 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"text/template"
 	"time"
 
 	"github.com/dukemarty/adr-go/data"
+	"github.com/dukemarty/adr-go/templates"
+	"github.com/dukemarty/adr-go/utils"
 )
 
-var defaultTemplate = `# {{NUMBER}}. {{TITLE}}
+var configFilenName = ".adr.json"
 
-Date: {{DATE}}
+var defaultTemplate = `# {{.NUMBER}}. {{.TITLE}}
+
+Date: {{.DATE}}
 
 ## Status
 
-{{DATE}} proposed
+{{.DATE}} proposed
 
 ## Context
 
@@ -46,21 +51,79 @@ func NewAdrManager(config data.Configuration) *AdrManager {
 	return &am
 }
 
-func (am AdrManager) Init() {
+func OpenAdrManager() (*AdrManager, error) {
+	config, err := data.LoadConfiguration()
+	if err != nil {
+		log.Printf("Could not load ADR configuration, maybe project is not initialized: %v\n", err)
+		return nil, errors.New("Could not load ADR configuration.")
+	}
 
-	log.Fatalln("Create .adr.json here, not in command")
+	am := AdrManager{
+		Config: config,
+	}
 
+	return &am, nil
+}
+
+func (am AdrManager) Init() error {
+
+	if utils.FileExists(configFilenName) {
+		return errors.New("ADRs seem to be initialized already, config file '.adr.json' exists!")
+	}
+
+	// 1) Create config file
+	am.Config.Store(".adr.json")
+
+	// 2) Create directory for ADRs
 	if _, err := os.Stat(am.Config.Path); os.IsNotExist(err) {
 		if err := os.MkdirAll(am.Config.Path, os.ModePerm); err != nil {
-			log.Fatalf("Error when trying to create directory for adr's: %v\n", err)
+			return errors.New(fmt.Sprintf("Error when trying to create directory for adr's: %v", err))
 		}
 	}
 
-	log.Fatalln("Create standard templates as well")
+	// 3) Create standard templates
+	val, ok := templates.TemplatesLibrary[am.Config.Language]
+	if !ok {
+		val, _ = templates.TemplatesLibrary["en"]
+	}
+	pathShortTemplate := filepath.Join(am.Config.Path, "template-short.md")
+	pathlongTemplate := filepath.Join(am.Config.Path, "template-long.md")
+	errShort := ioutil.WriteFile(pathShortTemplate, []byte(val.Short), 0644)
+	if errShort != nil {
+		log.Printf("Error when writing short ADR template: %v\n", errShort)
+	}
+	errLong := ioutil.WriteFile(pathlongTemplate, []byte(val.Long), 0644)
+	if errLong != nil {
+		log.Printf("Error when writing long ADR template: %v\n", errLong)
+	}
+
+	return nil
 }
 
 func (am AdrManager) AddAdr(title string) (string, error) {
-	return am.AddAdrWithContent(title, defaultTemplate)
+	templateContent := am.loadTemplateOrDefault(filepath.Join(am.Config.Path, am.Config.TemplateName))
+	return am.AddAdrWithContent(title, templateContent)
+}
+
+func (am AdrManager) AddAdrFromTemplate(title string, templateFile string) (string, error) {
+	templContent := am.loadTemplateOrDefault(templateFile)
+
+	return am.AddAdrWithContent(title, templContent)
+}
+
+func (am AdrManager) loadTemplateOrDefault(templateFile string) string {
+	rawTemplate, err := os.ReadFile(filepath.Join(am.Config.Path, templateFile))
+	var templContent string
+	if err != nil {
+		log.Printf("Could not read requested template file %s: %v\n", templateFile, err)
+		log.Println("Use standard template instead!")
+		val, _ := templates.TemplatesLibrary["en"]
+		templContent = val.Short
+	} else {
+		templContent = string(rawTemplate)
+	}
+
+	return templContent
 }
 
 func (am AdrManager) AddAdrWithContent(title string, content string) (string, error) {
@@ -72,18 +135,26 @@ func (am AdrManager) AddAdrWithContent(title string, content string) (string, er
 	// 	let fileData = raw.replace(/{NUMBER}/g, Utils.getLatestIndex() + 1)
 	// 	  .replace(/{TITLE}/g, name)
 	// 	  .replace(/{DATE}/g, newDate)
-	fmt.Printf("DATE to insert: %s\n", newDate)
-	fmt.Printf("INDEX to insert: %s\n", index)
-	fmt.Printf("FILENAME to write: %s\n", fileName)
+	vars := data.AdrVars{
+		NUMBER: index,
+		TITLE:  title,
+		DATE:   newDate,
+	}
+	log.Printf("Identified template variables: %v\n", vars)
 
-	am.createAdrFile(am.Config.Path, fileName, content)
+	tmpl, err := template.New("adr").Parse(content)
+	if err != nil {
+		panic(err)
+	}
+
+	am.createAdrFile(am.Config.Path, fileName, tmpl, vars)
 	return fileName, nil
 	// fileData := template.New("test").Parse(content).Execute()
 
 	// return "", nil
 }
 
-func (am AdrManager) createAdrFile(adrDirectory string, filename string, content string) {
+func (am AdrManager) createAdrFile(adrDirectory string, filename string, content *template.Template, data data.AdrVars) {
 
 	f, err := os.Create(filepath.Join(adrDirectory, filename))
 
@@ -93,7 +164,8 @@ func (am AdrManager) createAdrFile(adrDirectory string, filename string, content
 
 	defer f.Close()
 
-	_, err2 := f.WriteString(content)
+	// _, err2 := f.WriteString(content)
+	err2 := content.Execute(f, data)
 
 	if err2 != nil {
 		log.Fatal(err2)
@@ -154,24 +226,6 @@ func (am AdrManager) getLatestIndex() (int, error) {
 	return am.getMaxIndex(files), nil
 }
 
-// function getMaxIndex (files: {relativePath: string}[]) {
-// 	let maxNumber = 0
-// 	files.forEach(function (file) {
-// 	  let fileName = file.relativePath
-// 	  if (fileName === 'README.md') {
-// 		return
-// 	  }
-
-// 	  let indexNumber = fileName.substring(Config.getPrefix().length, Config.getDigits() + Config.getPrefix().length)
-// 	  let currentIndex = parseInt(indexNumber, 10)
-// 	  if (currentIndex > maxNumber) {
-// 		maxNumber = currentIndex
-// 	  }
-// 	})
-
-// 	return maxNumber
-//   }
-
 func (am AdrManager) getMaxIndex(filenames []string) int {
 	maxNumber := 0
 
@@ -189,15 +243,6 @@ func (am AdrManager) getMaxIndex(filenames []string) int {
 	return maxNumber
 }
 
-// export default function getAdrFiles () {
-// 	let savePath = Config.getSavePath()
-// 	return walkSync.entries(savePath, {
-// 	  globs: ['**/*.md'],
-// 	  ignore: ['README.md', 'template.md'],
-// 	  fs
-// 	})
-//   }
-
 func (am AdrManager) getAdrFiles() ([]string, error) {
 	files, err := ioutil.ReadDir(am.Config.Path)
 	if err != nil {
@@ -207,7 +252,7 @@ func (am AdrManager) getAdrFiles() ([]string, error) {
 	res := make([]string, 0)
 	for _, file := range files {
 		fmt.Printf("Analyzing file %v, Name='%s', IsDir=%v with file extension='%s'\n", file, file.Name(), file.IsDir(), filepath.Ext(file.Name()))
-		if !file.IsDir() && file.Name() != "README.md" && file.Name() != "template.md" && file.Name() != am.Config.TemplateName && filepath.Ext(file.Name()) == ".md" {
+		if !file.IsDir() && file.Name() != "README.md" && !strings.HasPrefix(file.Name(), "template-") && file.Name() != am.Config.TemplateName && filepath.Ext(file.Name()) == ".md" {
 			res = append(res, file.Name())
 		}
 	}

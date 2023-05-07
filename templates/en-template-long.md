@@ -1,29 +1,6 @@
-package data
+# {{.NUMBER}}. {{.TITLE}}
 
-var ShortStandardTemplate = `# {{NUMBER}}. {{TITLE}}
-
-Date: {{DATE}}
-
-## Status
-
-{{DATE}} proposed
-
-## Context
-
-The issue motivating this decision, and any context that influences or constrains the decision.
-
-## Decision
-
-The change that we're proposing or have agreed to implement.
-
-## Consequences
-
-What becomes easier or more difficult to do and any risks introduced by the change that will need to be mitigated.
-`
-
-var LongStandardTemplate = `# {{NUMBER}}. {{TITLE}}
-
-Date: {{DATE}}
+Date: {{.DATE}}
 
 Deciders: [list everyone involved in the decision] <!-- optional -->
 Technical Story: [description | ticket/issue URL] <!-- optional -->
@@ -31,7 +8,7 @@ Pull Request: [PR URL] <!-- optional -->
 
 ## Status
 
-{{DATE}} proposed
+{{.DATE}} proposed
 
 ## Context and Problem Statement
 
@@ -97,4 +74,3 @@ Chosen option: "[option 1]", because [justification. e.g., only option, which me
 
 * [Link type] [Link to ADR] <!-- example: Refined by [ADR-0005](0005-example.md) -->
 * … <!-- numbers of links can vary -->
-`

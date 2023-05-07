@@ -8,7 +8,7 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/dukemarty/adr-go/logic"
+	"github.com/dukemarty/adr-go/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -34,7 +34,7 @@ to quickly create a Cobra application.`,
 		if len(args) > 1 {
 			newStatus = args[1]
 		} else {
-			newStatus = logic.GetStatusInteractively()
+			newStatus = utils.GetStatusInteractively()
 		}
 
 		fmt.Printf("status called for ADR #%d with new status='%s'\n", adrIdx, newStatus)

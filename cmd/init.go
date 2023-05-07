@@ -4,7 +4,6 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/dukemarty/adr-go/data"
@@ -13,13 +12,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var firstAdr = `# {{NUMBER}}. Record architecture decisions
+var firstAdr = `# {{.NUMBER}}. Record architecture decisions
 
-Date: {{DATE}}
+Date: {{.DATE}}
 
 ## Status
 
-{{DATE}} Accepted
+{{.DATE}} Accepted
 
 ## Context
 
@@ -42,26 +41,29 @@ var initCmd = &cobra.Command{
 	This involves setting up a folder for the ADRs, adding a configuration
 	file for the ADR tool, and adding initial ADRs.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("init called, todos:")
+		log.Println("Command 'init' called.")
 
-		log.Fatalln("init not fully implemented yet, check existence of adr.json first")
-
-		// 1) Create config file with the provided flags
 		path, _ := cmd.Flags().GetString("path")
 		lang, _ := cmd.Flags().GetString("lang")
 		prefix, _ := cmd.Flags().GetString("prefix")
 		digits, _ := cmd.Flags().GetInt("digits")
 		template, _ := cmd.Flags().GetString("template")
 		newConfig := data.NewConfiguration(lang, path, prefix, digits, template)
-		newConfig.Store(".adr.json")
 
-		// 2) Create adr directory with standard templates
+		// 1) Create config file and adr directory with standard templates
 		am := logic.NewAdrManager(*newConfig)
-		am.Init()
+		err := am.Init()
 
+		if err != nil {
+			log.Fatalf("Could not initialize ADRs: %v", err)
+		}
+		log.Println("ADRs initialized.")
+
+		// 2) Create initial ADR
 		addFirst, _ := cmd.Flags().GetBool("addfirst")
 		if addFirst {
 			am.AddAdrWithContent("Record architecture decisions", firstAdr)
+			log.Println("Initial ADR created.")
 		}
 	},
 }

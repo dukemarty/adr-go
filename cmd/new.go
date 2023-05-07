@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/dukemarty/adr-go/logic"
 	"github.com/spf13/cobra"
 )
 
@@ -26,7 +27,23 @@ to quickly create a Cobra application.`,
 		template, _ := cmd.Flags().GetString("template")
 
 		fmt.Printf("new called with title '%s', explicit template?=%v ('%s')\n", args[0], len(template) > 0, template)
-		log.Fatalln("Command <new>: Not implemented yet!")
+
+		am, err := logic.OpenAdrManager()
+		if err != nil {
+			log.Fatalf("Error opening ADR management: %v\n", err)
+		}
+
+		var adrFile string
+		if len(template) > 0 {
+			adrFile, err = am.AddAdrFromTemplate(args[0], template)
+		} else {
+			adrFile, err = am.AddAdr(args[0])
+		}
+		if err != nil {
+			log.Fatalf("Error when creating new ADR: %v\n", err)
+		}
+
+		log.Printf("Created new ADR as %s\n", adrFile)
 	},
 }
 

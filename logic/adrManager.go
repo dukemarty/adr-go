@@ -7,6 +7,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"text/template"
@@ -148,10 +150,61 @@ func (am AdrManager) AddAdrWithContent(title string, content string) (string, er
 	}
 
 	am.createAdrFile(am.Config.Path, fileName, tmpl, vars)
-	return fileName, nil
-	// fileData := template.New("test").Parse(content).Execute()
 
-	// return "", nil
+	toc := am.GenerateToc()
+	os.WriteFile(filepath.Join(am.Config.Path, "README.md"), []byte(toc), 0644)
+
+	return fileName, nil
+}
+
+type AdrInfo struct {
+	RelativePath string
+	Index        int
+	Title        string
+}
+
+func (am AdrManager) GenerateToc() string {
+	var sb strings.Builder
+
+	// header
+	sb.WriteString("# Architecture Decision Records\n\n")
+
+	// body
+	adrs, err := am.getAdrFiles()
+	if err != nil {
+
+	}
+	sort.Strings(adrs)
+	for _, fn := range adrs {
+		adrInfos, err := am.extractAdrInfos(fn)
+		if err == nil {
+			entry := "\n* [" + strconv.Itoa(adrInfos.Index) + ". " + adrInfos.Title + "](" + adrInfos.RelativePath + ")"
+			sb.WriteString(entry)
+		}
+	}
+
+	// footer
+	sb.WriteString("\n")
+
+	return sb.String()
+}
+
+func (am AdrManager) extractAdrInfos(adrFile string) (AdrInfo, error) {
+	var res AdrInfo
+	res.RelativePath = filepath.Join(am.Config.Path, adrFile)
+
+	indexPart := adrFile[:am.Config.Digits]
+	index, err := strconv.Atoi(indexPart)
+	if err != nil {
+		log.Printf("Could not parse '%s' as index: %v\n", indexPart, err)
+		return res, err
+	}
+	res.Index = index
+
+	// TODO: workaround, later parse file
+	res.Title = adrFile[am.Config.Digits+1 : len(adrFile)-3]
+
+	return res, nil
 }
 
 func (am AdrManager) createAdrFile(adrDirectory string, filename string, content *template.Template, data data.AdrVars) {
@@ -174,27 +227,6 @@ func (am AdrManager) createAdrFile(adrDirectory string, filename string, content
 	// 	let toc = generate('toc', { output: false })
 	// 	fs.writeFileSync(savePath + 'README.md', toc + '\n')
 }
-
-// function createDecisions (name: string, savePath: string | any | void): string {
-// 	let language = Config.getLanguage()
-// 	let raw = fs.readFileSync(getTemplatePath(language), 'utf8')
-
-// 	let filePath = savePath + newIndex + '-' + fileName + '.md'
-// 	fs.writeFileSync(filePath, fileData)
-
-// 	return filePath
-//   }
-
-//   export function create (name: string) {
-// 	let savePath = Config.getSavePath()
-// 	let i18n = Utils.getI18n()
-// 	console.log(i18n.logSavePath + savePath)
-// 	mkdirp.sync(savePath)
-
-// 	const filePath = createDecisions(name, savePath)
-// 	Utils.openInEditor(path.join(process.cwd(), filePath))
-
-//   }
 
 func createDateString() string {
 	currentTime := time.Now()
@@ -267,19 +299,14 @@ func (am AdrManager) createIndexByNumber(number int) string {
 }
 
 func generateBaseFileName(title string) string {
+	mToUnderscore := regexp.MustCompile(`[\s_-]+`)
+	mRemove := regexp.MustCompile(`[#,.]+`)
+	mToHyphen := regexp.MustCompile(`[:?]+`)
 
-	return strings.Trim(strings.ToLower(title), " ")
+	filename := strings.Trim(strings.ToLower(title), " -")
+	filename = mToUnderscore.ReplaceAllString(filename, "_")
+	filename = mRemove.ReplaceAllString(filename, "")
+	filename = mToHyphen.ReplaceAllString(filename, "-")
+
+	return filename
 }
-
-// function generateFileName (originFileName) {
-// 	return originFileName.toLowerCase().trim()
-// 	  .replace(/[\s_-]+/g, '-') // swap any length of whitespace, underscore, hyphen characters with a single _
-// 	  .replace(/^-+|-+$/g, '') // remove leading, trailing -
-// 	  .replace(/，/g, '')
-// 	  .replace(/。/g, '')
-// 	  .replace(/ /g, '-')
-// 	  .replace(/\?/g, '-')
-// 	  .replace(/#/g, '')
-// 	  .replace(/:/g, '')
-// 	  .replace(/# /g, '')
-//   }

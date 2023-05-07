@@ -6,6 +6,9 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"os"
+	"os/exec"
+	"path/filepath"
 
 	"github.com/dukemarty/adr-go/logic"
 	"github.com/spf13/cobra"
@@ -42,8 +45,18 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			log.Fatalf("Error when creating new ADR: %v\n", err)
 		}
-
 		log.Printf("Created new ADR as %s\n", adrFile)
+
+		editor := os.Getenv("EDITOR")
+		if len(editor) > 0 {
+			cmd := exec.Command(editor, filepath.Join(am.Config.Path, adrFile))
+			err := cmd.Start()
+			if err == nil {
+				cmd.Process.Release()
+			}
+		} else {
+			log.Println("EDITOR environment variable not set, therefor new ADR can not be opened automatically.")
+		}
 	},
 }
 

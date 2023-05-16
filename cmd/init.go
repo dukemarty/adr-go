@@ -8,6 +8,7 @@ import (
 
 	"github.com/dukemarty/adr-go/data"
 	"github.com/dukemarty/adr-go/logic"
+	"github.com/dukemarty/adr-go/utils"
 
 	"github.com/spf13/cobra"
 )
@@ -41,8 +42,7 @@ var initCmd = &cobra.Command{
 	This involves setting up a folder for the ADRs, adding a configuration
 	file for the ADR tool, and adding initial ADRs.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		log.Println("Command 'init' called.")
-
+		verbose, _ := cmd.Flags().GetBool("verbose")
 		path, _ := cmd.Flags().GetString("path")
 		lang, _ := cmd.Flags().GetString("lang")
 		prefix, _ := cmd.Flags().GetString("prefix")
@@ -50,19 +50,23 @@ var initCmd = &cobra.Command{
 		template, _ := cmd.Flags().GetString("template")
 		newConfig := data.NewConfiguration(lang, path, prefix, digits, template)
 
+		logger := utils.SetupLogger(verbose)
+
+		logger.Println("Command 'init' called.")
+
 		// 1) Create config file and adr directory with standard templates
 		am := logic.NewAdrManager(*newConfig)
-		err := am.Init()
+		err := am.Init(logger)
 
 		if err != nil {
-			log.Fatalf("Could not initialize ADRs: %v", err)
+			logger.Fatalf("Could not initialize ADRs: %v", err)
 		}
-		log.Println("ADRs initialized.")
+		logger.Println("ADRs initialized.")
 
 		// 2) Create initial ADR
 		addFirst, _ := cmd.Flags().GetBool("addfirst")
 		if addFirst {
-			am.AddAdrWithContent("Record architecture decisions", firstAdr)
+			am.AddAdrWithContent("Record architecture decisions", firstAdr, logger)
 			log.Println("Initial ADR created.")
 		}
 	},

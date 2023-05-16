@@ -6,6 +6,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/dukemarty/adr-go/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -15,6 +16,11 @@ var versionCmd = &cobra.Command{
 	Short: "Output the version number",
 	Long:  `Output the version number.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		verbose, _ := cmd.Flags().GetBool("verbose")
+
+		logger := utils.SetupLogger(verbose)
+		logger.Println("Command 'version' called.")
+
 		fmt.Printf("%s\n", "0.0.1")
 	},
 }

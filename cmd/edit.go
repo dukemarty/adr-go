@@ -4,55 +4,66 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
+	"os"
+	"os/exec"
 
-	"github.com/dukemarty/adr-go/data"
 	"github.com/dukemarty/adr-go/logic"
 	"github.com/dukemarty/adr-go/utils"
 	"github.com/spf13/cobra"
 )
 
-// logsCmd represents the logs command
-var logsCmd = &cobra.Command{
-	Use:   "logs <adr index>",
-	Short: "List one ADR status logs",
+// editCmd represents the edit command
+var editCmd = &cobra.Command{
+	Use:   "edit <adr index>",
+	Short: "A brief description of your command",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-	Args: cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
+	Args: cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 	Run: func(cmd *cobra.Command, args []string) {
 		verbose, _ := cmd.Flags().GetBool("verbose")
+		editor, _ := cmd.Flags().GetString("editor")
 
 		logger := utils.SetupLogger(verbose)
-		logger.Println("Command 'logs' called.")
+		logger.Println("Command 'edit' called.")
+		logger.Printf("... for ADR with index %s\n", args[0])
 
 		adrFile, err := logic.GetAdrFilePathByIndexString(args[0], logger)
 		if err != nil {
 			logger.Fatalf("Error while trying to get ADR file for index %s: %v", args[0], err)
 		}
+		logger.Printf("Found file to edit: %s\n", adrFile)
 
-		data.ReadStatusSection(adrFile)
-		// log.SetFlags(0)
-		// log.SetOutput(ioutil.Discard)
+		if len(editor) == 0 {
+			editor = os.Getenv("EDITOR")
+		}
+		if len(editor) > 0 {
+			cmd := exec.Command(editor, adrFile)
+			err := cmd.Start()
+			if err == nil {
+				cmd.Process.Release()
+			}
+		} else {
+			logger.Println("EDITOR environment variable not set, therefor ADR can not be opened.")
+		}
 
-		fmt.Printf("logs called for ADR #%s -> %s\n", args[0], adrFile)
-		logger.Fatalln("Command <logs>: Not implemented yet!")
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(logsCmd)
+	rootCmd.AddCommand(editCmd)
 
 	// Here you will define your flags and configuration settings.
+	editCmd.Flags().StringP("editor", "e", "", "Path to editor executable for opening the ADR")
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// logsCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// editCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// logsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// editCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

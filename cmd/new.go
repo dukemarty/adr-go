@@ -4,13 +4,12 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 
 	"github.com/dukemarty/adr-go/logic"
+	"github.com/dukemarty/adr-go/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -27,25 +26,29 @@ to quickly create a Cobra application.`,
 	Args: cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 	Run: func(cmd *cobra.Command, args []string) {
 
+		verbose, _ := cmd.Flags().GetBool("verbose")
 		template, _ := cmd.Flags().GetString("template")
 
-		fmt.Printf("new called with title '%s', explicit template?=%v ('%s')\n", args[0], len(template) > 0, template)
+		logger := utils.SetupLogger(verbose)
 
-		am, err := logic.OpenAdrManager()
+		logger.Println("Command 'edit' called.")
+		logger.Printf("... with title '%s', explicit template?=%v ('%s')\n", args[0], len(template) > 0, template)
+
+		am, err := logic.OpenAdrManager(logger)
 		if err != nil {
-			log.Fatalf("Error opening ADR management: %v\n", err)
+			logger.Fatalf("Error opening ADR management: %v\n", err)
 		}
 
 		var adrFile string
 		if len(template) > 0 {
-			adrFile, err = am.AddAdrFromTemplate(args[0], template)
+			adrFile, err = am.AddAdrFromTemplate(args[0], template, logger)
 		} else {
-			adrFile, err = am.AddAdr(args[0])
+			adrFile, err = am.AddAdr(args[0], logger)
 		}
 		if err != nil {
-			log.Fatalf("Error when creating new ADR: %v\n", err)
+			logger.Fatalf("Error when creating new ADR: %v\n", err)
 		}
-		log.Printf("Created new ADR as %s\n", adrFile)
+		logger.Printf("Created new ADR as %s\n", adrFile)
 
 		editor := os.Getenv("EDITOR")
 		if len(editor) > 0 {
@@ -55,7 +58,7 @@ to quickly create a Cobra application.`,
 				cmd.Process.Release()
 			}
 		} else {
-			log.Println("EDITOR environment variable not set, therefor new ADR can not be opened automatically.")
+			logger.Println("EDITOR environment variable not set, therefor new ADR can not be opened automatically.")
 		}
 	},
 }

@@ -5,7 +5,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 
 	"github.com/dukemarty/adr-go/utils"
@@ -23,22 +22,27 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Args: cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 	Run: func(cmd *cobra.Command, args []string) {
+		verbose, _ := cmd.Flags().GetBool("verbose")
+
+		logger := utils.SetupLogger(verbose)
+
+		logger.Println("Command 'status' called.")
 
 		adrIdx, err := strconv.Atoi(args[0])
 
 		if err != nil {
-			log.Fatalf("ERROR: provided ADR index must be number, could not be parsed: %s\n", args[0])
+			logger.Fatalf("ERROR: provided ADR index must be number, could not be parsed: %s\n", args[0])
 		}
 
 		var newStatus string
 		if len(args) > 1 {
 			newStatus = args[1]
 		} else {
-			newStatus = utils.GetStatusInteractively()
+			newStatus = utils.GetStatusInteractively(fmt.Sprintf("ADR #%d()", adrIdx))
 		}
 
 		fmt.Printf("status called for ADR #%d with new status='%s'\n", adrIdx, newStatus)
-		log.Fatalln("Command <status>: Not implemented yet!")
+		logger.Fatalln("Command <status>: Not implemented yet!")
 	},
 }
 

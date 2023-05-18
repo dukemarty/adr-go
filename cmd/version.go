@@ -21,7 +21,7 @@ var versionCmd = &cobra.Command{
 		logger := utils.SetupLogger(verbose)
 		logger.Println("Command 'version' called.")
 
-		fmt.Printf("%s\n", "0.0.1")
+		fmt.Printf("%s\n", "0.1.0-beta.1")
 	},
 }
 

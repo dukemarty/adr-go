@@ -1,3 +1,6 @@
+/*
+Copyright © 2023 Martin Loesch <development@martinloesch.net>
+*/
 package logic
 
 import (
@@ -19,7 +22,7 @@ import (
 	"github.com/dukemarty/adr-go/utils"
 )
 
-var configFilenName = ".adr.json"
+var configFileName = ".adr.json"
 
 var defaultTemplate = `# {{.NUMBER}}. {{.TITLE}}
 
@@ -72,14 +75,19 @@ func OpenAdrManager(logger *log.Logger) (*AdrManager, error) {
 	return &am, nil
 }
 
+// Initialize ADR management in the current directory. Logging is performed
+// via the logger provided as parameter, allowing to better control how much
+// logging is done.
+// Returns an error if for any reason initialization could not be performed,
+// in particular if it was already initialized this counts as an error.
 func (am AdrManager) Init(logger *log.Logger) error {
 
-	if utils.FileExists(configFilenName) {
+	if utils.FileExists(configFileName) {
 		return errors.New("ADRs seem to be initialized already, config file '.adr.json' exists!")
 	}
 
 	// 1) Create config file
-	am.Config.Store(".adr.json")
+	am.Config.Store(configFileName)
 
 	// 2) Create directory for ADRs
 	if _, err := os.Stat(am.Config.Path); os.IsNotExist(err) {
@@ -121,6 +129,11 @@ func (am AdrManager) AddAdrFromTemplate(title string, templateFile string, logge
 	return am.AddAdrWithContent(title, templContent, logger)
 }
 
+// Add new ADR with the provided title and the also provided content.
+// The content is processed as a template, replacing variables. It
+// also generates/updates the TOC file.
+//
+// The replaced variables are '{.NUMBER}', '{.TITLE}' and '{.DATE}'.
 func (am AdrManager) AddAdrWithContent(title string, content string, logger *log.Logger) (string, error) {
 	newDate := createDateString()
 	index := am.getNewIndexString(logger)
@@ -198,6 +211,8 @@ type AdrInfo struct {
 	Title        string
 }
 
+// Generate table of content of all found ADRs and return
+// it as a string.
 func (am AdrManager) GenerateToc(logger *log.Logger) string {
 	var sb strings.Builder
 

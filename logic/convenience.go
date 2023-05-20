@@ -1,3 +1,6 @@
+/*
+Copyright © 2023 Martin Loesch <development@martinloesch.net>
+*/
 package logic
 
 import (

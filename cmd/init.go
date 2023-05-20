@@ -1,5 +1,5 @@
 /*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
+Copyright © 2023 Martin Loesch <development@martinloesch.net>
 */
 package cmd
 
@@ -51,7 +51,6 @@ var initCmd = &cobra.Command{
 		newConfig := data.NewConfiguration(lang, path, prefix, digits, template)
 
 		logger := utils.SetupLogger(verbose)
-
 		logger.Println("Command 'init' called.")
 
 		// 1) Create config file and adr directory with standard templates

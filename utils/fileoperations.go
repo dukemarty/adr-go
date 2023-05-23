@@ -5,7 +5,9 @@ package utils
 
 import (
 	"errors"
+	"log"
 	"os"
+	"os/exec"
 )
 
 func FileExists(filename string) bool {
@@ -21,4 +23,20 @@ func FileExists(filename string) bool {
 		// Therefore, do *NOT* use !os.IsNotExist(err) to test for file existence
 		return false
 	}
+}
+
+func EditFile(filename string, editor string, logger *log.Logger) {
+	if len(editor) == 0 {
+		editor = os.Getenv("EDITOR")
+	}
+	if len(editor) > 0 {
+		cmd := exec.Command(editor, filename)
+		err := cmd.Start()
+		if err == nil {
+			cmd.Process.Release()
+		}
+	} else {
+		logger.Println("EDITOR environment variable not set, therefor ADR can not be opened.")
+	}
+
 }

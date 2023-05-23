@@ -4,9 +4,6 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"os"
-	"os/exec"
-
 	"github.com/dukemarty/adr-go/logic"
 	"github.com/dukemarty/adr-go/utils"
 	"github.com/spf13/cobra"
@@ -37,19 +34,7 @@ to quickly create a Cobra application.`,
 		}
 		logger.Printf("Found file to edit: %s\n", adrFile)
 
-		if len(editor) == 0 {
-			editor = os.Getenv("EDITOR")
-		}
-		if len(editor) > 0 {
-			cmd := exec.Command(editor, adrFile)
-			err := cmd.Start()
-			if err == nil {
-				cmd.Process.Release()
-			}
-		} else {
-			logger.Println("EDITOR environment variable not set, therefor ADR can not be opened.")
-		}
-
+		utils.EditFile(adrFile, editor, logger)
 	},
 }
 

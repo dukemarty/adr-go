@@ -4,10 +4,6 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"os"
-	"os/exec"
-	"path/filepath"
-
 	"github.com/dukemarty/adr-go/logic"
 	"github.com/dukemarty/adr-go/utils"
 	"github.com/spf13/cobra"
@@ -28,11 +24,11 @@ to quickly create a Cobra application.`,
 
 		verbose, _ := cmd.Flags().GetBool("verbose")
 		template, _ := cmd.Flags().GetString("template")
+		editor, _ := cmd.Flags().GetString("editor")
 
 		logger := utils.SetupLogger(verbose)
 
-		logger.Println("Command 'edit' called.")
-		logger.Printf("... with title '%s', explicit template?=%v ('%s')\n", args[0], len(template) > 0, template)
+		logger.Printf("Command 'edit' called, with title '%s', explicit template?=%v ('%s')\n", args[0], len(template) > 0, template)
 
 		am, err := logic.OpenAdrManager(logger)
 		if err != nil {
@@ -50,16 +46,7 @@ to quickly create a Cobra application.`,
 		}
 		logger.Printf("Created new ADR as %s\n", adrFile)
 
-		editor := os.Getenv("EDITOR")
-		if len(editor) > 0 {
-			cmd := exec.Command(editor, filepath.Join(am.Config.Path, adrFile))
-			err := cmd.Start()
-			if err == nil {
-				cmd.Process.Release()
-			}
-		} else {
-			logger.Println("EDITOR environment variable not set, therefor new ADR can not be opened automatically.")
-		}
+		utils.EditFile(adrFile, editor, logger)
 	},
 }
 
@@ -68,6 +55,7 @@ func init() {
 
 	// Here you will define your flags and configuration settings.
 	newCmd.Flags().StringP("template", "t", "", "template to use for the new ADR")
+	newCmd.Flags().StringP("editor", "e", "", "Path to editor executable for opening the ADR")
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:

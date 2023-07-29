@@ -358,14 +358,14 @@ func (am AdrManager) createIndexByNumber(number int, logger *log.Logger) string 
 }
 
 func generateBaseFileName(title string) string {
-	mToUnderscore := regexp.MustCompile(`[\s_-]+`)
+	mToHyphen1 := regexp.MustCompile(`[\s_-]+`)
 	mRemove := regexp.MustCompile(`[#,.]+`)
-	mToHyphen := regexp.MustCompile(`[:?]+`)
+	mToHyphen2 := regexp.MustCompile(`[:?]+`)
 
 	filename := strings.Trim(strings.ToLower(title), " -")
-	filename = mToUnderscore.ReplaceAllString(filename, "_")
+	filename = mToHyphen1.ReplaceAllString(filename, "-")
 	filename = mRemove.ReplaceAllString(filename, "")
-	filename = mToHyphen.ReplaceAllString(filename, "-")
+	filename = mToHyphen2.ReplaceAllString(filename, "-")
 
 	return filename
 }

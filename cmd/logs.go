@@ -4,11 +4,12 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
+	"os"
 
 	"github.com/dukemarty/adr-go/data"
 	"github.com/dukemarty/adr-go/logic"
 	"github.com/dukemarty/adr-go/utils"
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
@@ -34,12 +35,25 @@ to quickly create a Cobra application.`,
 			logger.Fatalf("Error while trying to get ADR file for index %s: %v", args[0], err)
 		}
 
-		data.ReadStatusSection(adrFile)
+		status, err := data.ReadStatusEntries(adrFile)
+		if err != nil {
+			logger.Printf("ERROR: %v\n", err)
+			return
+		}
+
+		tbl := tablewriter.NewWriter(os.Stdout)
+		tbl.SetHeader([]string{"Date of Change", "Status"})
+		for _, st := range status {
+			tbl.Append([]string{st.Date, st.Status})
+		}
+
+		tbl.Render()
+
 		// log.SetFlags(0)
 		// log.SetOutput(ioutil.Discard)
 
-		fmt.Printf("logs called for ADR #%s -> %s\n", args[0], adrFile)
-		logger.Fatalln("Command <logs>: Not implemented yet!")
+		// fmt.Printf("logs called for ADR #%s -> %s\n", args[0], adrFile)
+		// logger.Fatalln("Command <logs>: Not implemented yet!")
 	},
 }
 

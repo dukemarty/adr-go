@@ -4,7 +4,12 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"fmt"
+	"os"
+
+	"github.com/dukemarty/adr-go/logic"
 	"github.com/dukemarty/adr-go/utils"
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
@@ -25,7 +30,25 @@ to quickly create a Cobra application.`,
 
 		logger.Println("Command 'list' called.")
 
-		logger.Panicln("Command 'list': Not implemented yet!")
+		am, err := logic.OpenAdrManager(logger)
+		if err != nil {
+			logger.Fatalf("Error opening ADR management: %v\n", err)
+		}
+
+		allAdrs, err := am.GetListOfAllAdrsStatus(logger)
+		if err != nil {
+			logger.Printf("Error while loading ADR status': %v\n", err)
+		}
+		logger.Printf("Number of parsed ADRs: %d\n", len(allAdrs))
+
+		tbl := tablewriter.NewWriter(os.Stdout)
+		tbl.SetAutoWrapText(false)
+		tbl.SetHeader([]string{"Decision", "Last modified date", "Last status"})
+		for _, adrst := range allAdrs {
+			tbl.Append([]string{fmt.Sprintf("%d %s", adrst.Index, adrst.Title), adrst.LastModified, adrst.LastStatus})
+		}
+		tbl.Render()
+
 	},
 }
 

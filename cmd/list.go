@@ -39,13 +39,15 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			logger.Printf("Error while loading ADR status': %v\n", err)
 		}
-		logger.Printf("Number of parsed ADRs: %d\n", len(allAdrs))
+		logger.Printf("Number of parsed and loaded ADRs: %d\n", len(allAdrs))
 
 		tbl := tablewriter.NewWriter(os.Stdout)
 		tbl.SetAutoWrapText(false)
-		tbl.SetHeader([]string{"Decision", "Last modified date", "Last status"})
+		tbl.SetHeader([]string{"Index", "Decision", "Last modified date", "Last status"})
+		// to format index with fitting number of leading zeros, used data from config
+		fmtString := fmt.Sprintf("%%0%dd", am.Config.Digits)
 		for _, adrst := range allAdrs {
-			tbl.Append([]string{fmt.Sprintf("%d %s", adrst.Index, adrst.Title), adrst.LastModified, adrst.LastStatus})
+			tbl.Append([]string{fmt.Sprintf(fmtString, adrst.Index), adrst.Title, adrst.LastModified, adrst.LastStatus})
 		}
 		tbl.Render()
 

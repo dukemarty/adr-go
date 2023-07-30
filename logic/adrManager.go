@@ -220,7 +220,7 @@ func (am AdrManager) GenerateToc(logger *log.Logger) string {
 	}
 	sort.Strings(adrs)
 	for _, fn := range adrs {
-		adrInfos, err := data.LoadAdrInfo(am.Config.Path, fn)
+		adrInfos, err := data.LoadAdrInfo(logger, am.Config.Path, fn)
 		if err == nil {
 			entry := "\n* [" + strconv.Itoa(adrInfos.Index) + ". " + adrInfos.Title + "](" + adrInfos.RelativePath + ")"
 			sb.WriteString(entry)
@@ -246,16 +246,15 @@ func (am AdrManager) GetListOfAllAdrsStatus(logger *log.Logger) ([]AdrStatus, er
 		logger.Printf("Could not load ADR files: %v\n", err)
 		return nil, err
 	}
-	logger.Printf("Read %d filename\n", len(allAdrFiles))
 
 	res := make([]AdrStatus, 0)
 	for _, filename := range allAdrFiles {
-		adrInfos, err := data.LoadAdrInfo(am.Config.Path, filename)
+		adrInfos, err := data.LoadAdrInfo(logger, am.Config.Path, filename)
 		if err != nil {
 			logger.Printf("Error loading basic info for %s\n", filename)
 			continue
 		}
-		status, err := data.ReadStatusEntries(adrInfos.RelativePath)
+		status, err := data.ReadStatusEntries(logger, adrInfos.RelativePath)
 		if err != nil {
 			logger.Printf("Error loading status for %s\n", filename)
 			continue

@@ -5,10 +5,12 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/dukemarty/adr-go/data"
 	"github.com/dukemarty/adr-go/logic"
 	"github.com/dukemarty/adr-go/utils"
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
@@ -27,19 +29,28 @@ to quickly create a Cobra application.`,
 		verbose, _ := cmd.Flags().GetBool("verbose")
 
 		logger := utils.SetupLogger(verbose)
-		logger.Println("Command 'logs' called.")
+
+		logger.Printf("Command 'logs' called for ADR #%s.\n", args[0])
 
 		adrFile, err := logic.GetAdrFilePathByIndexString(args[0], logger)
 		if err != nil {
 			logger.Fatalf("Error while trying to get ADR file for index %s: %v", args[0], err)
 		}
 
-		data.ReadStatusSection(adrFile)
-		// log.SetFlags(0)
-		// log.SetOutput(ioutil.Discard)
+		status, err := data.ReadStatusEntries(logger, adrFile)
+		if err != nil {
+			logger.Printf("Error reading status entries: %v\n", err)
+			return
+		}
 
-		fmt.Printf("logs called for ADR #%s -> %s\n", args[0], adrFile)
-		logger.Fatalln("Command <logs>: Not implemented yet!")
+		fmt.Printf("ADR #%s: %s\n", args[0], adrFile)
+		tbl := tablewriter.NewWriter(os.Stdout)
+		tbl.SetHeader([]string{"Date of Change", "Status"})
+		for _, st := range status {
+			tbl.Append([]string{st.Date, st.Status})
+		}
+
+		tbl.Render()
 	},
 }
 

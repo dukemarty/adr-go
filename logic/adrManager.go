@@ -205,12 +205,6 @@ func (am AdrManager) loadTemplateOrDefault(templateFile string, logger *log.Logg
 	return templContent
 }
 
-type AdrInfo struct {
-	RelativePath string
-	Index        int
-	Title        string
-}
-
 // Generate table of content of all found ADRs and return
 // it as a string.
 func (am AdrManager) GenerateToc(logger *log.Logger) string {
@@ -226,7 +220,7 @@ func (am AdrManager) GenerateToc(logger *log.Logger) string {
 	}
 	sort.Strings(adrs)
 	for _, fn := range adrs {
-		adrInfos, err := am.extractAdrInfos(fn)
+		adrInfos, err := data.LoadAdrInfo(logger, am.Config.Path, fn)
 		if err == nil {
 			entry := "\n* [" + strconv.Itoa(adrInfos.Index) + ". " + adrInfos.Title + "](" + adrInfos.RelativePath + ")"
 			sb.WriteString(entry)
@@ -239,20 +233,46 @@ func (am AdrManager) GenerateToc(logger *log.Logger) string {
 	return sb.String()
 }
 
-func (am AdrManager) extractAdrInfos(adrFile string) (AdrInfo, error) {
-	var res AdrInfo
-	res.RelativePath = filepath.Join(am.Config.Path, adrFile)
+type AdrStatus struct {
+	Index        int
+	Title        string
+	LastModified string
+	LastStatus   string
+}
 
-	index, err := am.ExtractAdrIndexFromFile(adrFile)
+func (am AdrManager) GetListOfAllAdrsStatus(logger *log.Logger) ([]AdrStatus, error) {
+	allAdrFiles, err := am.getAdrFiles(logger)
 	if err != nil {
-		return res, err
+		logger.Printf("Could not load ADR files: %v\n", err)
+		return nil, err
 	}
-	res.Index = index
 
-	// TODO: workaround, later parse file
-	res.Title = adrFile[am.Config.Digits+1 : len(adrFile)-3]
+	res := make([]AdrStatus, 0)
+	for _, filename := range allAdrFiles {
+		adrInfos, err := data.LoadAdrInfo(logger, am.Config.Path, filename)
+		if err != nil {
+			logger.Printf("Error loading basic info for %s\n", filename)
+			continue
+		}
+		status, err := data.ReadStatusEntries(logger, adrInfos.RelativePath)
+		if err != nil {
+			logger.Printf("Error loading status for %s\n", filename)
+			continue
+		}
+		res = append(res, AdrStatus{Index: adrInfos.Index, Title: adrInfos.Title, LastModified: status[len(status)-1].Date, LastStatus: status[len(status)-1].Status})
+	}
 
 	return res, nil
+}
+
+func (am AdrManager) extractAdrStatusFromFile(filename string) (AdrStatus, error) {
+	// load ADR
+
+	// if okay:
+
+	testStatus := AdrStatus{Index: 1, Title: "Blabla Dings", LastModified: "1979-10-13", LastStatus: "1979-10-13 Birth"}
+
+	return testStatus, nil
 }
 
 func (am AdrManager) ExtractAdrIndexFromFile(filename string) (int, error) {

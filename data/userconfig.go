@@ -52,7 +52,7 @@ func (config UserConfiguration) Store() error {
 	}
 	configPath := filepath.Join(home, UserConfigFilename)
 
-	content, _ := json.MarshalIndent(config, "", "")
+	content, _ := json.MarshalIndent(config, "", "    ")
 
 	errorRes := os.WriteFile(configPath, content, 0644)
 
@@ -67,4 +67,10 @@ func LoadEditor(logger *log.Logger) string {
 	}
 
 	return config.Editor
+}
+
+func (config UserConfiguration) String() string {
+	content, _ := json.MarshalIndent(config, "", "    ")
+
+	return string(content)
 }

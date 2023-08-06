@@ -4,6 +4,7 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"github.com/dukemarty/adr-go/data"
 	"github.com/dukemarty/adr-go/logic"
 	"github.com/dukemarty/adr-go/utils"
 	"github.com/spf13/cobra"
@@ -12,7 +13,7 @@ import (
 // editCmd represents the edit command
 var editCmd = &cobra.Command{
 	Use:   "edit <adr index>",
-	Short: "A brief description of your command",
+	Short: "Open ADR in editor",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 
@@ -34,7 +35,7 @@ to quickly create a Cobra application.`,
 		}
 		logger.Printf("Found file to edit: %s\n", adrFile)
 
-		utils.EditFile(adrFile, editor, logger)
+		utils.EditFile(adrFile, editor, data.LoadEditor(logger), logger)
 	},
 }
 

@@ -4,6 +4,7 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"github.com/dukemarty/adr-go/data"
 	"github.com/dukemarty/adr-go/logic"
 	"github.com/dukemarty/adr-go/utils"
 	"github.com/spf13/cobra"
@@ -13,12 +14,9 @@ import (
 var newCmd = &cobra.Command{
 	Use:   "new <adr title>",
 	Short: "Create new ADR",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Long: `Create a new ADR with a given title. The new ADR is automatically numbered,
+and a template file (either standard or a selected template), and then opened in
+an editor.`,
 	Args: cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 	Run: func(cmd *cobra.Command, args []string) {
 
@@ -28,7 +26,7 @@ to quickly create a Cobra application.`,
 
 		logger := utils.SetupLogger(verbose)
 
-		logger.Printf("Command 'edit' called, with title '%s', explicit template?=%v ('%s')\n", args[0], len(template) > 0, template)
+		logger.Printf("Command 'new' called, with title '%s', explicit template?=%v ('%s')\n", args[0], len(template) > 0, template)
 
 		am, err := logic.OpenAdrManager(logger)
 		if err != nil {
@@ -46,7 +44,7 @@ to quickly create a Cobra application.`,
 		}
 		logger.Printf("Created new ADR as %s\n", adrFile)
 
-		utils.EditFile(adrFile, editor, logger)
+		utils.EditFile(adrFile, editor, data.LoadEditor(logger), logger)
 	},
 }
 

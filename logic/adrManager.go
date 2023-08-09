@@ -167,11 +167,28 @@ func (am AdrManager) EditAdr(adrIndex int) {
 
 }
 
+func (am AdrManager) GetAllAdrFileNames(logger *log.Logger) ([]string, error) {
+	files, err := os.ReadDir(am.Config.Path)
+	if err != nil {
+		return nil, err
+	}
+
+	res := make([]string, 0)
+	for _, file := range files {
+		logger.Printf("Analyzing file %v, Name='%s', IsDir=%v with file extension='%s'\n", file, file.Name(), file.IsDir(), filepath.Ext(file.Name()))
+		if !file.IsDir() && file.Name() != "README.md" && !strings.HasPrefix(file.Name(), "template-") && file.Name() != am.Config.TemplateName && filepath.Ext(file.Name()) == ".md" {
+			res = append(res, file.Name())
+		}
+	}
+
+	return res, nil
+}
+
 // Get an ADR's filename for a given index number adrIndex.
 // Returns either the found filename, or an error object if it could not find
 // the respective ADR.
 func (am AdrManager) GetAdrFilenameByIndex(adrIndex int, logger *log.Logger) (string, error) {
-	allAdrFiles, err := am.getAdrFiles(logger)
+	allAdrFiles, err := am.GetAllAdrFileNames(logger)
 	if err != nil {
 		logger.Printf("Could not read any ADRs, in particular not found index %d: %v\n", adrIndex, err)
 		return "", err
@@ -214,7 +231,7 @@ func (am AdrManager) GenerateToc(logger *log.Logger) string {
 	sb.WriteString("# Architecture Decision Records\n\n")
 
 	// body
-	adrs, err := am.getAdrFiles(logger)
+	adrs, err := am.GetAllAdrFileNames(logger)
 	if err != nil {
 
 	}
@@ -234,6 +251,7 @@ func (am AdrManager) GenerateToc(logger *log.Logger) string {
 }
 
 type AdrStatus struct {
+	Filename     string
 	Index        int
 	Title        string
 	LastModified string
@@ -241,14 +259,18 @@ type AdrStatus struct {
 }
 
 func (am AdrManager) GetListOfAllAdrsStatus(logger *log.Logger) ([]AdrStatus, error) {
-	allAdrFiles, err := am.getAdrFiles(logger)
+	allAdrFiles, err := am.GetAllAdrFileNames(logger)
 	if err != nil {
 		logger.Printf("Could not load ADR files: %v\n", err)
 		return nil, err
 	}
 
+	return am.GetStatusFromListOfAdrFiles(allAdrFiles, logger)
+}
+
+func (am AdrManager) GetStatusFromListOfAdrFiles(files []string, logger *log.Logger) ([]AdrStatus, error) {
 	res := make([]AdrStatus, 0)
-	for _, filename := range allAdrFiles {
+	for _, filename := range files {
 		adrInfos, err := data.LoadAdrInfo(logger, am.Config.Path, filename)
 		if err != nil {
 			logger.Printf("Error loading basic info for %s\n", filename)
@@ -259,7 +281,7 @@ func (am AdrManager) GetListOfAllAdrsStatus(logger *log.Logger) ([]AdrStatus, er
 			logger.Printf("Error loading status for %s\n", filename)
 			continue
 		}
-		res = append(res, AdrStatus{Index: adrInfos.Index, Title: adrInfos.Title, LastModified: status[len(status)-1].Date, LastStatus: status[len(status)-1].Status})
+		res = append(res, AdrStatus{Filename: filename, Index: adrInfos.Index, Title: adrInfos.Title, LastModified: status[len(status)-1].Date, LastStatus: status[len(status)-1].Status})
 	}
 
 	return res, nil
@@ -322,7 +344,7 @@ func (am AdrManager) getNewIndexString(logger *log.Logger) string {
 }
 
 func (am AdrManager) getLatestIndex(logger *log.Logger) (int, error) {
-	files, err := am.getAdrFiles(logger)
+	files, err := am.GetAllAdrFileNames(logger)
 
 	if err != nil {
 		logger.Printf("Error when trying to load existing ADR files: %v\n", err)
@@ -352,23 +374,6 @@ func (am AdrManager) getMaxIndex(filenames []string, logger *log.Logger) int {
 	}
 
 	return maxNumber
-}
-
-func (am AdrManager) getAdrFiles(logger *log.Logger) ([]string, error) {
-	files, err := ioutil.ReadDir(am.Config.Path)
-	if err != nil {
-		return nil, err
-	}
-
-	res := make([]string, 0)
-	for _, file := range files {
-		logger.Printf("Analyzing file %v, Name='%s', IsDir=%v with file extension='%s'\n", file, file.Name(), file.IsDir(), filepath.Ext(file.Name()))
-		if !file.IsDir() && file.Name() != "README.md" && !strings.HasPrefix(file.Name(), "template-") && file.Name() != am.Config.TemplateName && filepath.Ext(file.Name()) == ".md" {
-			res = append(res, file.Name())
-		}
-	}
-
-	return res, nil
 }
 
 func (am AdrManager) createIndexByNumber(number int, logger *log.Logger) string {

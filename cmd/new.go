@@ -53,7 +53,7 @@ func init() {
 
 	// Here you will define your flags and configuration settings.
 	newCmd.Flags().StringP("template", "t", "", "template file to use for the new ADR (located in ADR folder)")
-	newCmd.Flags().StringP("editor", "e", "", "Path to editor executable for opening the ADR")
+	newCmd.Flags().StringP("editor", "e", "", "path to editor executable for opening the ADR")
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:

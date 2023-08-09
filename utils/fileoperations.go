@@ -25,15 +25,22 @@ func FileExists(filename string) bool {
 	}
 }
 
-func EditFile(filename string, editor string, logger *log.Logger) {
+func EditFile(filename string, editor string, defaultEditor string, logger *log.Logger) {
 	if len(editor) == 0 {
-		editor = os.Getenv("EDITOR")
+		if len(defaultEditor) == 0 {
+			editor = os.Getenv("EDITOR")
+		} else {
+			editor = defaultEditor
+		}
 	}
 	if len(editor) > 0 {
+		logger.Printf("Opening '%s' with '%s'\n", filename, editor)
 		cmd := exec.Command(editor, filename)
 		err := cmd.Start()
 		if err == nil {
 			cmd.Process.Release()
+		} else {
+			logger.Printf("Error when trying to start editor: %v\n", err)
 		}
 	} else {
 		logger.Println("EDITOR environment variable not set, therefor ADR can not be opened.")

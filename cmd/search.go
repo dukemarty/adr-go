@@ -14,21 +14,21 @@ import (
 
 // searchCmd represents the search command
 var searchCmd = &cobra.Command{
-	Use:   "search",
+	Use:   "search <keywords>+",
 	Short: "Search ADRs by keywords",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Long: `Filter all ADRs by the presence of the provided keywords in their content,
+	and print the table of all found ADRs and their status.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbose, _ := cmd.Flags().GetBool("verbose")
 		caseSensitive, _ := cmd.Flags().GetBool("casesensitive")
 
 		logger := utils.SetupLogger(verbose)
 
-		logger.Println("Command 'search' called.")
+		if caseSensitive {
+			logger.Printf("Command 'search' called case-sensitive with these keywords: %v\n", args)
+		} else {
+			logger.Printf("Command 'search' called case-insensitive with these keywords: %v\n", args)
+		}
 
 		foundFiles, err := logic.GetAdrFilenamesFiltered(args, caseSensitive, logger)
 		if err != nil {

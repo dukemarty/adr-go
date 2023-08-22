@@ -51,15 +51,6 @@ an editor.`,
 func init() {
 	rootCmd.AddCommand(newCmd)
 
-	// Here you will define your flags and configuration settings.
 	newCmd.Flags().StringP("template", "t", "", "template file to use for the new ADR (located in ADR folder)")
 	newCmd.Flags().StringP("editor", "e", "", "path to editor executable for opening the ADR")
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// newCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// newCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

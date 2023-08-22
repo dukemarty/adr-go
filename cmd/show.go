@@ -6,6 +6,7 @@ package cmd
 import (
 	_ "embed"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -15,16 +16,29 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var availableDocuments = []string{"Changelog", "License"}
+
 // changelogCmd represents the changelog command
 var showCmd = &cobra.Command{
 	Use:   "show <document>",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Show or store an embedded document.",
+	Long: fmt.Sprintf(`adr-go contains a number of documents embedded, e.g. its license.
+	Using this command, those documents can be printed to stdout, or all of the documents
+	can be stored to a file each.  
+	
+	The currently available documents are: %v
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	So if the <document> argument is provided, it must be one of those values.
+
+	By providing the -c/--create flag, the selected document is stored with its
+	standard file name.
+
+	If no document type is provided, _with_ the create flag all files are stored.
+	Without the flag, an interactive prompt is show to the user for selecting
+	which document he wants to see.`, availableDocuments),
+	ValidArgs: availableDocuments,
+	Args:      cobra.MatchAll(cobra.RangeArgs(0, 1), cobra.OnlyValidArgs),
+
 	Run: func(cmd *cobra.Command, args []string) {
 
 		verbose, _ := cmd.Flags().GetBool("verbose")
@@ -33,14 +47,11 @@ to quickly create a Cobra application.`,
 		logger := utils.SetupLogger(verbose)
 
 		if create {
-			logger.Println("Command 'show' called,  'create' flag.")
-			for _, df := range documents.Docs {
-				err := os.WriteFile(df.Filename, []byte(df.Content), 0644)
-				if err != nil {
-					logger.Printf("Problem writing %s: %v\n", df.Filename, err)
-				} else {
-					logger.Printf("Wrote %s.\n", df.Filename)
-				}
+			logger.Println("Command 'show' called with 'create' flag.")
+			if len(args) == 0 {
+				storeAllDocuments(logger)
+			} else {
+				storeSingleDocument(logger, args[0])
 			}
 		} else {
 			var doc string
@@ -48,7 +59,7 @@ to quickly create a Cobra application.`,
 				logger.Println("Command 'show' called, without a document type selected.")
 				prompt := &survey.Select{
 					Message: "What document shall be shown:",
-					Options: []string{"Changelog", "License"},
+					Options: availableDocuments,
 				}
 				survey.AskOne(prompt, &doc)
 			} else {
@@ -69,14 +80,35 @@ to quickly create a Cobra application.`,
 func init() {
 	rootCmd.AddCommand(showCmd)
 
-	// Here you will define your flags and configuration settings.
 	showCmd.Flags().BoolP("create", "c", false, "create files for all documents")
+}
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// changelogCmd.PersistentFlags().String("foo", "", "A help for foo")
+func storeAllDocuments(logger *log.Logger) {
+	for _, df := range documents.Docs {
+		err := os.WriteFile(df.Filename, []byte(df.Content), 0644)
+		if err != nil {
+			logger.Printf("Problem writing %s: %v\n", df.Filename, err)
+		} else {
+			logger.Printf("Wrote %s.\n", df.Filename)
+		}
+	}
+}
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// changelogCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+func storeSingleDocument(logger *log.Logger, docType string) {
+	var filename string
+	var content string
+	switch strings.ToUpper(docType) {
+	case "CHANGELOG":
+		filename = "CHANGELOG.md"
+		content = documents.Changelog
+	case "LICENSE":
+		filename = "LICENSE"
+		content = documents.License
+	}
+	err := os.WriteFile(filename, []byte(content), 0644)
+	if err != nil {
+		logger.Printf("Problem writing %s: %v\n", filename, err)
+	} else {
+		logger.Printf("Wrote %s.\n", filename)
+	}
 }

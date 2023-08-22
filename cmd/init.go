@@ -41,6 +41,7 @@ var initCmd = &cobra.Command{
 	
 	This involves setting up a folder for the ADRs, adding a configuration
 	file for the ADR tool, and adding initial ADRs.`,
+	Args: cobra.MatchAll(cobra.NoArgs, cobra.OnlyValidArgs),
 	Run: func(cmd *cobra.Command, args []string) {
 		verbose, _ := cmd.Flags().GetBool("verbose")
 		path, _ := cmd.Flags().GetString("path")
@@ -51,7 +52,7 @@ var initCmd = &cobra.Command{
 		newConfig := data.NewConfiguration(lang, path, prefix, digits, template)
 
 		logger := utils.SetupLogger(verbose)
-		logger.Println("Command 'init' called.")
+		logger.Printf("Command 'init' called with: %+v.\n", *newConfig)
 
 		// 1) Create config file and adr directory with standard templates
 		am := logic.NewAdrManager(*newConfig)
@@ -74,19 +75,10 @@ var initCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(initCmd)
 
-	// Here you will define your flags and configuration settings.
 	initCmd.Flags().IntP("digits", "d", 4, "Number of digits for ADR numbering")
 	initCmd.Flags().StringP("path", "p", "docs/adr/", "Path to directory where ADRs are stored")
 	initCmd.Flags().StringP("prefix", "x", "", "Prefix for ADR numbers")
 	initCmd.Flags().BoolP("addfirst", "a", true, "add initial adr about using adr's")
 	initCmd.Flags().StringP("lang", "l", "en", "Language used, stored in config file")
 	initCmd.Flags().StringP("template", "t", "template-short.md", "template to use for new ADRs")
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// initCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// initCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

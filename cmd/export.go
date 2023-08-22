@@ -8,6 +8,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// TODO: 'export' command not implemented yet!
+
 // exportCmd represents the export command
 var exportCmd = &cobra.Command{
 	Use:   "export",

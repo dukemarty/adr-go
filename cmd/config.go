@@ -20,6 +20,7 @@ var configCmd = &cobra.Command{
 This file can point to a default editor to use for ADR editing, and it may
 contain the path to a central ADR store (support for this is not fully implemented
 yet).`,
+	Args: cobra.MatchAll(cobra.NoArgs, cobra.OnlyValidArgs),
 	Run: func(cmd *cobra.Command, args []string) {
 		verbose, _ := cmd.Flags().GetBool("verbose")
 		editor, _ := cmd.Flags().GetString("editor")
@@ -52,15 +53,6 @@ yet).`,
 func init() {
 	rootCmd.AddCommand(configCmd)
 
-	// Here you will define your flags and configuration settings.
 	configCmd.Flags().StringP("editor", "e", "", "path to editor exucutable to use (by default) to open ADRs")
 	configCmd.Flags().StringP("store", "s", "", "path to central ADR store")
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// configCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// configCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

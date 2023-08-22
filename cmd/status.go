@@ -11,6 +11,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// TODO: 'status' command not implemented yet!
+
 // statusCmd represents the status command
 var statusCmd = &cobra.Command{
 	Use:   "status <adr index> [new status]",

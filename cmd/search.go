@@ -18,6 +18,7 @@ var searchCmd = &cobra.Command{
 	Short: "Search ADRs by keywords",
 	Long: `Filter all ADRs by the presence of the provided keywords in their content,
 	and print the table of all found ADRs and their status.`,
+	Args: cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 	Run: func(cmd *cobra.Command, args []string) {
 		verbose, _ := cmd.Flags().GetBool("verbose")
 		caseSensitive, _ := cmd.Flags().GetBool("casesensitive")
@@ -56,14 +57,5 @@ var searchCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(searchCmd)
 
-	// Here you will define your flags and configuration settings.
 	searchCmd.Flags().BoolP("casesensitive", "c", false, "flag to activate case-sensitive search")
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// searchCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// searchCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

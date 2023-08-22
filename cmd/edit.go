@@ -14,20 +14,16 @@ import (
 var editCmd = &cobra.Command{
 	Use:   "edit <adr index>",
 	Short: "Open ADR in editor",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Args: cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
+	Long: `Open the selected ADR in an editor, which can either be provided
+	on command line, or the default editor defined in the project configuration
+	is used.`,
+	Args: cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 	Run: func(cmd *cobra.Command, args []string) {
 		verbose, _ := cmd.Flags().GetBool("verbose")
 		editor, _ := cmd.Flags().GetString("editor")
 
 		logger := utils.SetupLogger(verbose)
-		logger.Println("Command 'edit' called.")
-		logger.Printf("... for ADR with index %s\n", args[0])
+		logger.Printf("Command 'edit' called for ADR with index %s\n", args[0])
 
 		adrFile, err := logic.GetAdrFilePathByIndexString(args[0], logger)
 		if err != nil {
@@ -42,14 +38,5 @@ to quickly create a Cobra application.`,
 func init() {
 	rootCmd.AddCommand(editCmd)
 
-	// Here you will define your flags and configuration settings.
 	editCmd.Flags().StringP("editor", "e", "", "Path to editor executable for opening the ADR")
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// editCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// editCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

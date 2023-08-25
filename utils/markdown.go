@@ -32,14 +32,31 @@ func OpenMarkdownFile(filename string) (*MarkdownDoc, error) {
 	return &res, nil
 }
 
-func FindMarkdownSection(doc *MarkdownDoc, sectionName string) mdast.Node {
+func (doc *MarkdownDoc) FindMarkdownSection(sectionName string) mdast.Node {
 	node := doc.Doc.FirstChild()
-	i := 0
 	for node != nil && !(node.Kind().String() == "Heading" && strings.ToUpper(string(node.Text(doc.Source))) == strings.ToUpper(sectionName)) {
-		// fmt.Printf("** Skip NODE %d:\n", i)
 		node = node.NextSibling()
-		i = i + 1
 	}
 
 	return node
+}
+
+func (doc *MarkdownDoc) FindInsertAtEndOfSection(sectionName string) (preText string, postText string) {
+
+	var cutPoint int
+	node := doc.Doc.FirstChild()
+	for node != nil && !(node.Kind().String() == "Heading" && strings.ToUpper(string(node.Text(doc.Source))) == strings.ToUpper(sectionName)) {
+		node = node.NextSibling()
+	}
+	for node != nil && node.Kind().String() == "Heading" {
+		node = node.NextSibling()
+	}
+	for node != nil && node.Kind().String() != "Heading" {
+		node = node.NextSibling()
+	}
+
+	node = node.PreviousSibling()
+	cutPoint = node.Lines().At(node.Lines().Len()-1).Stop + 1
+
+	return string(doc.Source[:cutPoint]), string(doc.Source[cutPoint:])
 }

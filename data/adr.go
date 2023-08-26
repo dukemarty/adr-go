@@ -84,6 +84,11 @@ func ReadStatusEntries(logger *log.Logger, adrFile string) ([]StatusChange, erro
 	for nextChild != nil && !(nextChild.Kind().String() == "Heading") {
 		line := string(nextChild.Text(doc.Source))
 		tokens := strings.Split(line, " ")
+		if len(tokens) < 2 {
+			logger.Printf("Status line '%s' does not contain all required information!", line)
+			nextChild = nextChild.NextSibling()
+			continue
+		}
 		res = append(res, StatusChange{Date: tokens[0], Status: tokens[1]})
 		nextChild = nextChild.NextSibling()
 	}

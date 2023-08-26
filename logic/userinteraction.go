@@ -1,19 +1,18 @@
 /*
 Copyright © 2023 Martin Loesch <development@martinloesch.net>
 */
-package utils
+package logic
 
 import (
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/dukemarty/adr-go/data"
 )
-
-var SupportedStatus = []string{"Proposed", "Accepted", "Done", "Deprecated", "Superseded"}
 
 func GetStatusInteractively(pretext string) string {
 	newStatus := ""
 	prompt := &survey.Select{
 		Message: pretext + " new status:",
-		Options: SupportedStatus,
+		Options: data.SupportedStatus,
 	}
 	survey.AskOne(prompt, &newStatus)
 

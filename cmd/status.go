@@ -13,15 +13,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var flagNewStatus = data.AdrStatus("")
+
 // statusCmd represents the status command
 var statusCmd = &cobra.Command{
-	Use:   "status <adr index> [new status]",
+	Use:   "status <adr index>",
 	Short: "Change one ADR status",
-	Long: fmt.Sprintf(`Change status of a selected ADR,  may be used interactively.
+	Long: `Change status of a selected ADR,  may be used interactively.
 
-	If the new status is provided as argument, any value is allowed; but
-	the values used by default (and available via the interactive prompt)
-	are: %v`, utils.SupportedStatus),
+	The new status can either be provided using the -s/--status flag, or an interactive
+	prompt is shown for the user to select the new status.`,
 	Args: cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 	Run: func(cmd *cobra.Command, args []string) {
 		verbose, _ := cmd.Flags().GetBool("verbose")
@@ -35,12 +36,14 @@ var statusCmd = &cobra.Command{
 		}
 
 		var newStatus string
-		if len(args) > 1 {
+		// if len(args) > 1 {
+		if len(flagNewStatus) > 1 {
 			logger.Printf("Command 'status' called for ADR #%d with new status %s.\n", adrIdx, args[1])
-			newStatus = args[1]
+			// newStatus = args[1]
+			newStatus = flagNewStatus.String()
 		} else {
 			logger.Printf("Command 'status' called for ADR #%d without new status.\n", adrIdx)
-			newStatus = utils.GetStatusInteractively(fmt.Sprintf("ADR #%d()", adrIdx))
+			newStatus = logic.GetStatusInteractively(fmt.Sprintf("ADR #%d()", adrIdx))
 		}
 
 		adrFile, err := logic.GetAdrFilePathByIndex(adrIdx, logger)
@@ -53,4 +56,6 @@ var statusCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(statusCmd)
+
+	statusCmd.Flags().VarP(&flagNewStatus, "status", "s", fmt.Sprintf(`new status to assign, allowed: %v`, data.SupportedStatus))
 }

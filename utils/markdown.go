@@ -20,6 +20,10 @@ type MarkdownDoc struct {
 	Doc    mdast.Node
 }
 
+// Open markdown file (with some error handling) for further processing
+//
+// Takes the filename as parameter, returns either a MarkdownDoc object
+// reference or an error.
 func OpenMarkdownFile(filename string) (*MarkdownDoc, error) {
 	data, err := os.ReadFile(filename)
 	if err != nil {

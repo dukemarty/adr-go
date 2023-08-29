@@ -36,7 +36,7 @@ to quickly create a Cobra application.`,
 
 		logger.Printf("Command 'export' called with format '%s', store-to-file=%v.", args[0], store)
 
-		data := loadData(logger)
+		dataPath, data := loadData(logger)
 
 		exporter, err := adrexport.CreateExporter(logger, args[0])
 		if err != nil {
@@ -44,7 +44,7 @@ to quickly create a Cobra application.`,
 			return
 		}
 
-		exportData := exporter.Export(logger, data)
+		exportData := exporter.Export(logger, data, dataPath)
 		if store {
 			filename := "export." + args[0]
 			err := os.WriteFile(filename, []byte(exportData), 0644)
@@ -72,18 +72,19 @@ func init() {
 	// exportCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func loadData(logger *log.Logger) []logic.AdrStatus {
+func loadData(logger *log.Logger) (string, []logic.AdrStatus) {
 	am, err := logic.OpenAdrManager(logger)
 	if err != nil {
-		logger.Fatalf("Error opening ADR management: %v\n", err)
+		logger.Printf("Error opening ADR management: %v\n", err)
+		return "", []logic.AdrStatus{}
 	}
 
 	allAdrs, err := am.GetListOfAllAdrsStatus(logger)
 	if err != nil {
 		logger.Printf("Error while loading ADR status': %v\n", err)
-		return []logic.AdrStatus{}
+		return am.Config.Path, []logic.AdrStatus{}
 	}
 	logger.Printf("Number of parsed and loaded ADRs: %d\n", len(allAdrs))
 
-	return allAdrs
+	return am.Config.Path, allAdrs
 }

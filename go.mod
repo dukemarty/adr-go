@@ -14,6 +14,7 @@ require (
 	github.com/spf13/cobra v1.7.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/yuin/goldmark v1.5.4 // indirect
+	go.abhg.dev/goldmark/toc v0.4.0 // indirect
 	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63 // indirect
 	golang.org/x/sys v0.11.0 // indirect
 	golang.org/x/term v0.0.0-20210503060354-a79de5458b56 // indirect

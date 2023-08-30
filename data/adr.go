@@ -4,10 +4,14 @@
 package data
 
 import (
+	"fmt"
 	"log"
+	"os"
+	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/dukemarty/adr-go/utils"
 )
@@ -73,16 +77,40 @@ func ReadStatusEntries(logger *log.Logger, adrFile string) ([]StatusChange, erro
 		logger.Fatalf("Could not read data from ADR '%s': %v", adrFile, err)
 	}
 
-	section := utils.FindMarkdownSection(doc, "Status")
+	section := doc.FindMarkdownSection("Status")
 
 	res := make([]StatusChange, 0)
 	nextChild := section.NextSibling()
 	for nextChild != nil && !(nextChild.Kind().String() == "Heading") {
 		line := string(nextChild.Text(doc.Source))
 		tokens := strings.Split(line, " ")
+		if len(tokens) < 2 {
+			logger.Printf("Status line '%s' does not contain all required information!", line)
+			nextChild = nextChild.NextSibling()
+			continue
+		}
 		res = append(res, StatusChange{Date: tokens[0], Status: tokens[1]})
 		nextChild = nextChild.NextSibling()
 	}
 
 	return res, nil
+}
+
+func AddStatusEntry(logger *log.Logger, adrFile string, newStatus string) {
+	doc, err := utils.OpenMarkdownFile(adrFile)
+	if err != nil {
+		logger.Fatalf("Could not read data from ADR '%s': %v", adrFile, err)
+	}
+
+	prePart, postPart := doc.FindInsertAtEndOfSection("Status")
+
+	err = os.Rename(adrFile, path.Join(adrFile+".bak"))
+	if err != nil {
+		logger.Printf("Could not rename ADR file '%s': %v\n", adrFile, err)
+	}
+
+	err = os.WriteFile(adrFile, []byte(fmt.Sprintf("%s\n%v %s\n%s", prePart, time.Now().Format("2006-01-02"), newStatus, postPart)), 0644)
+	if err != nil {
+		logger.Printf("Could not write changed ADR file '%s': %v\n", adrFile, err)
+	}
 }

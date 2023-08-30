@@ -13,6 +13,11 @@ import (
 	"strconv"
 )
 
+// Get path to an ADR file bye its index.
+//
+// Takes the index as parseable string and a logger object.
+// Returns either the path if a fitting ADR was found, or
+// an error object.
 func GetAdrFilePathByIndexString(adrIndexStr string, logger *log.Logger) (string, error) {
 
 	adrIdx, err := strconv.Atoi(adrIndexStr)
@@ -21,16 +26,20 @@ func GetAdrFilePathByIndexString(adrIndexStr string, logger *log.Logger) (string
 		return "", errors.New(fmt.Sprintf("Provided ADR index '%s' must be number, could not be parsed: %v", adrIndexStr, err))
 	}
 
+	return GetAdrFilePathByIndex(adrIdx, logger)
+}
+
+func GetAdrFilePathByIndex(adrIndex int, logger *log.Logger) (string, error) {
 	am, err := OpenAdrManager(logger)
 	if err != nil {
 		logger.Printf("Error opening ADR management: %v", err)
 		return "", errors.New(fmt.Sprintf("Error opening ADR management: %v", err))
 	}
 
-	adrFile, err := am.GetAdrFilenameByIndex(adrIdx, logger)
+	adrFile, err := am.GetAdrFilenameByIndex(adrIndex, logger)
 	if err != nil {
-		logger.Printf("Could not find ADR for index %d: %v", adrIdx, err)
-		return "", errors.New(fmt.Sprintf("Could not find ADR for index %d: %v", adrIdx, err))
+		logger.Printf("Could not find ADR for index %d: %v", adrIndex, err)
+		return "", errors.New(fmt.Sprintf("Could not find ADR for index %d: %v", adrIndex, err))
 	}
 
 	return filepath.Join(am.Config.Path, adrFile), nil

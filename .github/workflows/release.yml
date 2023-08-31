@@ -10,6 +10,7 @@ on:
 jobs:
 
   release-linux-amd64:
+    permissions: write-all
     name: release linux/amd64
     runs-on: ubuntu-latest
     steps:
@@ -21,6 +22,7 @@ jobs:
         goarch: amd64
         
   release-windows:
+    permissions: write-all
     name: release windows/amd64
     runs-on: ubuntu-latest
     steps:

@@ -6,12 +6,21 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/dukemarty/adr-go/logic"
 	"github.com/dukemarty/adr-go/utils"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
+
+var statusColors = map[string]tablewriter.Colors{
+	"PROPOSED":   {tablewriter.Normal, tablewriter.FgHiWhiteColor},
+	"ACCEPTED":   {tablewriter.Normal, tablewriter.FgHiCyanColor},
+	"DONE":       {tablewriter.Normal, tablewriter.FgHiGreenColor},
+	"DEPRECATED": {tablewriter.Normal, tablewriter.FgHiRedColor},
+	"SUPERSEDED": {tablewriter.Normal, tablewriter.FgHiYellowColor},
+}
 
 // listCmd represents the list command
 var listCmd = &cobra.Command{
@@ -45,7 +54,13 @@ var listCmd = &cobra.Command{
 		// to format index with fitting number of leading zeros, used data from config
 		fmtString := fmt.Sprintf("%%0%dd", am.Config.Digits)
 		for _, adrst := range allAdrs {
-			tbl.Append([]string{fmt.Sprintf(fmtString, adrst.Index), adrst.Title, adrst.LastModified, adrst.LastStatus})
+			row := []string{fmt.Sprintf(fmtString, adrst.Index), adrst.Title, adrst.LastModified, adrst.LastStatus}
+			statusColor := tablewriter.Colors{}
+			if val, present := statusColors[strings.ToUpper(adrst.LastStatus)]; present {
+				statusColor = val
+			}
+			colors := []tablewriter.Colors{{}, {}, {}, statusColor}
+			tbl.Rich(row, colors)
 		}
 		tbl.Render()
 

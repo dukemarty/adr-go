@@ -19,10 +19,10 @@ var editCmd = &cobra.Command{
 	is used.`,
 	Args: cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 	Run: func(cmd *cobra.Command, args []string) {
-		verbose, _ := cmd.Flags().GetBool("verbose")
+		initCommon(cmd)
+
 		editor, _ := cmd.Flags().GetString("editor")
 
-		logger := utils.SetupLogger(verbose)
 		logger.Printf("Command 'edit' called for ADR with index %s\n", args[0])
 
 		adrFile, err := logic.GetAdrFilePathByIndexString(args[0], logger)

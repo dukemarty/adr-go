@@ -9,7 +9,6 @@ import (
 
 	"github.com/dukemarty/adr-go/data"
 	"github.com/dukemarty/adr-go/logic"
-	"github.com/dukemarty/adr-go/utils"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
@@ -22,9 +21,7 @@ var logsCmd = &cobra.Command{
 	ADR has had and the timestamp when the status was reached.`,
 	Args: cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 	Run: func(cmd *cobra.Command, args []string) {
-		verbose, _ := cmd.Flags().GetBool("verbose")
-
-		logger := utils.SetupLogger(verbose)
+		initCommon(cmd)
 
 		logger.Printf("Command 'logs' called for ADR #%s.\n", args[0])
 

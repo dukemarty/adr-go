@@ -7,7 +7,6 @@ import (
 	"fmt"
 
 	"github.com/dukemarty/adr-go/data"
-	"github.com/dukemarty/adr-go/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -22,11 +21,10 @@ contain the path to a central ADR store (support for this is not fully implement
 yet).`,
 	Args: cobra.MatchAll(cobra.NoArgs, cobra.OnlyValidArgs),
 	Run: func(cmd *cobra.Command, args []string) {
-		verbose, _ := cmd.Flags().GetBool("verbose")
+		initCommon(cmd)
+
 		editor, _ := cmd.Flags().GetString("editor")
 		store, _ := cmd.Flags().GetString("store")
-
-		logger := utils.SetupLogger(verbose)
 
 		logger.Printf("Command 'config' called with editor='%s', and central adr store at '%s'.\n", editor, store)
 

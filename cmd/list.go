@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/dukemarty/adr-go/logic"
-	"github.com/dukemarty/adr-go/utils"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
@@ -31,9 +30,7 @@ var listCmd = &cobra.Command{
 	change.`,
 	Args: cobra.MatchAll(cobra.NoArgs, cobra.OnlyValidArgs),
 	Run: func(cmd *cobra.Command, args []string) {
-		verbose, _ := cmd.Flags().GetBool("verbose")
-
-		logger := utils.SetupLogger(verbose)
+		initCommon(cmd)
 
 		logger.Println("Command 'list' called.")
 

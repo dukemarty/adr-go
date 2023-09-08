@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"github.com/dukemarty/adr-go/logic"
-	"github.com/dukemarty/adr-go/utils"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
@@ -20,10 +19,9 @@ var searchCmd = &cobra.Command{
 	and print the table of all found ADRs and their status.`,
 	Args: cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 	Run: func(cmd *cobra.Command, args []string) {
-		verbose, _ := cmd.Flags().GetBool("verbose")
-		caseSensitive, _ := cmd.Flags().GetBool("casesensitive")
+		initCommon(cmd)
 
-		logger := utils.SetupLogger(verbose)
+		caseSensitive, _ := cmd.Flags().GetBool("casesensitive")
 
 		if caseSensitive {
 			logger.Printf("Command 'search' called case-sensitive with these keywords: %v\n", args)

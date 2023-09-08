@@ -8,7 +8,6 @@ import (
 
 	"github.com/dukemarty/adr-go/data"
 	"github.com/dukemarty/adr-go/logic"
-	"github.com/dukemarty/adr-go/utils"
 
 	"github.com/spf13/cobra"
 )
@@ -43,7 +42,8 @@ var initCmd = &cobra.Command{
 	file for the ADR tool, and adding initial ADRs.`,
 	Args: cobra.MatchAll(cobra.NoArgs, cobra.OnlyValidArgs),
 	Run: func(cmd *cobra.Command, args []string) {
-		verbose, _ := cmd.Flags().GetBool("verbose")
+		initCommon(cmd)
+
 		path, _ := cmd.Flags().GetString("path")
 		lang, _ := cmd.Flags().GetString("lang")
 		prefix, _ := cmd.Flags().GetString("prefix")
@@ -51,7 +51,6 @@ var initCmd = &cobra.Command{
 		template, _ := cmd.Flags().GetString("template")
 		newConfig := data.NewConfiguration(lang, path, prefix, digits, template)
 
-		logger := utils.SetupLogger(verbose)
 		logger.Printf("Command 'init' called with: %+v.\n", *newConfig)
 
 		// 1) Create config file and adr directory with standard templates

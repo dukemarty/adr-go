@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"runtime/debug"
 
-	"github.com/dukemarty/adr-go/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -21,9 +20,8 @@ var versionCmd = &cobra.Command{
 	version number and, if available, git revision.`,
 	Args: cobra.MatchAll(cobra.NoArgs, cobra.OnlyValidArgs),
 	Run: func(cmd *cobra.Command, args []string) {
-		verbose, _ := cmd.Flags().GetBool("verbose")
+		initCommon(cmd)
 
-		logger := utils.SetupLogger(verbose)
 		logger.Println("Command 'version' called.")
 
 		revisionInfo := ""

@@ -9,7 +9,6 @@ import (
 
 	"github.com/dukemarty/adr-go/data"
 	"github.com/dukemarty/adr-go/logic"
-	"github.com/dukemarty/adr-go/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -25,12 +24,9 @@ var statusCmd = &cobra.Command{
 	prompt is shown for the user to select the new status.`,
 	Args: cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 	Run: func(cmd *cobra.Command, args []string) {
-		verbose, _ := cmd.Flags().GetBool("verbose")
-
-		logger := utils.SetupLogger(verbose)
+		initCommon(cmd)
 
 		adrIdx, err := strconv.Atoi(args[0])
-
 		if err != nil {
 			logger.Fatalf("ERROR: provided ADR index must be number, could not be parsed: %s\n", args[0])
 		}

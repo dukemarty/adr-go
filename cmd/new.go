@@ -19,12 +19,10 @@ and a template file (either standard or a selected template), and then opened in
 an editor.`,
 	Args: cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 	Run: func(cmd *cobra.Command, args []string) {
+		initCommon(cmd)
 
-		verbose, _ := cmd.Flags().GetBool("verbose")
 		template, _ := cmd.Flags().GetString("template")
 		editor, _ := cmd.Flags().GetString("editor")
-
-		logger := utils.SetupLogger(verbose)
 
 		logger.Printf("Command 'new' called, with title '%s', explicit template?=%v ('%s')\n", args[0], len(template) > 0, template)
 

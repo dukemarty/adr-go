@@ -12,7 +12,6 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/dukemarty/adr-go/documents"
-	"github.com/dukemarty/adr-go/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -40,11 +39,9 @@ var showCmd = &cobra.Command{
 	Args:      cobra.MatchAll(cobra.RangeArgs(0, 1), cobra.OnlyValidArgs),
 
 	Run: func(cmd *cobra.Command, args []string) {
+		initCommon(cmd)
 
-		verbose, _ := cmd.Flags().GetBool("verbose")
 		create, _ := cmd.Flags().GetBool("create")
-
-		logger := utils.SetupLogger(verbose)
 
 		if create {
 			logger.Println("Command 'show' called with 'create' flag.")

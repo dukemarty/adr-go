@@ -14,8 +14,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// TODO: 'export' command not implemented yet!
-
 // exportCmd represents the export command
 var exportCmd = &cobra.Command{
 	Use:   "export",
@@ -60,16 +58,7 @@ to quickly create a Cobra application.`,
 func init() {
 	rootCmd.AddCommand(exportCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// exportCmd.PersistentFlags().String("foo", "", "A help for foo")
 	exportCmd.Flags().BoolP("store", "s", false, "store export to file instead of printing to console")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// exportCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
 func loadData(logger *log.Logger) (string, []logic.AdrStatus) {

@@ -5,36 +5,34 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	adrexport "github.com/dukemarty/adr-go/export"
-	"github.com/dukemarty/adr-go/logic"
-	"github.com/dukemarty/adr-go/utils"
 	"github.com/spf13/cobra"
 )
 
 // exportCmd represents the export command
 var exportCmd = &cobra.Command{
-	Use:   "export",
-	Short: "Export ADR reporter in HTML, CSV, JSON, Markdown",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Use:   "export <format>",
+	Short: "Export ADRs in another (single file) format",
+	Long: fmt.Sprintf(`Exports the ADRs in the selected format. Allowed formats
+	are: %v
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	In JSON format, only a list of the most important information is returned,
+	the other formats contain the complete ADRs.
+
+	The exports are printed on the console, to store directly into a file use
+	the -s/--store flag.`, adrexport.SupportedExporters),
 	ValidArgs: adrexport.SupportedExporters,
 	Args:      cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 	Run: func(cmd *cobra.Command, args []string) {
-		verbose, _ := cmd.Flags().GetBool("verbose")
-		store, _ := cmd.Flags().GetBool("store")
+		initCommon(cmd)
 
-		logger := utils.SetupLogger(verbose)
+		store, _ := cmd.Flags().GetBool("store")
 
 		logger.Printf("Command 'export' called with format '%s', store-to-file=%v.", args[0], store)
 
-		dataPath, data := loadData(logger)
+		dataPath, data := loadAdrData(logger)
 
 		exporter, err := adrexport.CreateExporter(logger, args[0])
 		if err != nil {
@@ -59,21 +57,4 @@ func init() {
 	rootCmd.AddCommand(exportCmd)
 
 	exportCmd.Flags().BoolP("store", "s", false, "store export to file instead of printing to console")
-}
-
-func loadData(logger *log.Logger) (string, []logic.AdrStatus) {
-	am, err := logic.OpenAdrManager(logger)
-	if err != nil {
-		logger.Printf("Error opening ADR management: %v\n", err)
-		return "", []logic.AdrStatus{}
-	}
-
-	allAdrs, err := am.GetListOfAllAdrsStatus(logger)
-	if err != nil {
-		logger.Printf("Error while loading ADR status': %v\n", err)
-		return am.Config.Path, []logic.AdrStatus{}
-	}
-	logger.Printf("Number of parsed and loaded ADRs: %d\n", len(allAdrs))
-
-	return am.Config.Path, allAdrs
 }

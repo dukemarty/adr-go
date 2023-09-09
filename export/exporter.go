@@ -30,7 +30,7 @@ type AdrListExporter interface {
 }
 
 // List of supported exporter types.
-var SupportedExporters = []string{"csv", "json", "markdown", "md", "html"}
+var SupportedExporters = []string{"csv", "json", "markdown", "html"}
 
 func CreateExporter(logger *log.Logger, expType string) (AdrListExporter, error) {
 	var res AdrListExporter = nil
@@ -40,10 +40,8 @@ func CreateExporter(logger *log.Logger, expType string) (AdrListExporter, error)
 		res = CsvExporter{}
 	case "json":
 		res = JsonExporter{}
-	case "md":
 	case "markdown":
-		logger.Println("Exporter type 'markdown' not implemented yet!")
-		resErr = errors.New("Exporter type 'markdown' not implemented yet!")
+		res = MarkdownExporter{}
 	case "html":
 		res = HtmlExporter{}
 	default:
@@ -110,7 +108,32 @@ func (JsonExporter) Export(logger *log.Logger, entries []logic.AdrStatus, _ stri
 }
 
 // ----------------------------------------------------------------------------
-// Implementation of an AdrListExporter for JSON data
+// Implementation of an AdrListExporter for Markdown data
+
+type MarkdownExporter struct{}
+
+func (MarkdownExporter) Export(logger *log.Logger, entries []logic.AdrStatus, dataPath string) string {
+
+	// resort entries based on their index
+	sort.Sort(ByIndex(entries))
+
+	// assemble all ADRs into single in-memory document
+	var sb strings.Builder
+
+	for _, e := range entries {
+		buf, err := os.ReadFile(path.Join(dataPath, e.Filename))
+		if err != nil {
+			logger.Printf("Could not read ADR from file '%s': %v\n", e.Filename, err)
+		}
+		sb.Write(buf)
+		sb.WriteString("\n\n")
+	}
+
+	return sb.String()
+}
+
+// ----------------------------------------------------------------------------
+// Implementation of an AdrListExporter for HTML data
 
 //go:embed export_template.html
 var HtmlTemplate string

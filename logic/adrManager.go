@@ -6,7 +6,9 @@ package logic
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"path"
+
+	// "io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -103,11 +105,11 @@ func (am AdrManager) Init(logger *log.Logger) error {
 	}
 	pathShortTemplate := filepath.Join(am.Config.Path, "template-short.md")
 	pathlongTemplate := filepath.Join(am.Config.Path, "template-long.md")
-	errShort := ioutil.WriteFile(pathShortTemplate, []byte(val.Short), 0644)
+	errShort := os.WriteFile(pathShortTemplate, []byte(val.Short), 0644)
 	if errShort != nil {
 		logger.Printf("Error when writing short ADR template: %v\n", errShort)
 	}
-	errLong := ioutil.WriteFile(pathlongTemplate, []byte(val.Long), 0644)
+	errLong := os.WriteFile(pathlongTemplate, []byte(val.Long), 0644)
 	if errLong != nil {
 		logger.Printf("Error when writing long ADR template: %v\n", errLong)
 	}
@@ -137,7 +139,7 @@ func (am AdrManager) AddAdrFromTemplate(title string, templateFile string, logge
 func (am AdrManager) AddAdrWithContent(title string, content string, logger *log.Logger) (string, error) {
 	newDate := createDateString()
 	index := am.getNewIndexString(logger)
-	fileName := index + "-" + generateBaseFileName(title) + ".md"
+	fileName := constructFilenameFromIndexAndTitle(index, title)
 
 	// 	let newIndex = Utils.getNewIndexString()
 	// 	let fileData = raw.replace(/{NUMBER}/g, Utils.getLatestIndex() + 1)
@@ -163,10 +165,6 @@ func (am AdrManager) AddAdrWithContent(title string, content string, logger *log
 	return fileName, nil
 }
 
-func (am AdrManager) EditAdr(adrIndex int) {
-
-}
-
 func (am AdrManager) GetAllAdrFileNames(logger *log.Logger) ([]string, error) {
 	files, err := os.ReadDir(am.Config.Path)
 	if err != nil {
@@ -182,6 +180,12 @@ func (am AdrManager) GetAllAdrFileNames(logger *log.Logger) ([]string, error) {
 	}
 
 	return res, nil
+}
+
+func constructFilenameFromIndexAndTitle(index string, title string) string {
+	fileName := index + "-" + generateBaseFileName(title) + ".md"
+
+	return fileName
 }
 
 // Get an ADR's filename for a given index number adrIndex.
@@ -287,16 +291,6 @@ func (am AdrManager) GetStatusFromListOfAdrFiles(files []string, logger *log.Log
 	return res, nil
 }
 
-func (am AdrManager) extractAdrStatusFromFile(filename string) (AdrStatus, error) {
-	// load ADR
-
-	// if okay:
-
-	testStatus := AdrStatus{Index: 1, Title: "Blabla Dings", LastModified: "1979-10-13", LastStatus: "1979-10-13 Birth"}
-
-	return testStatus, nil
-}
-
 func (am AdrManager) ExtractAdrIndexFromFile(filename string) (int, error) {
 	indexPart := filename[:am.Config.Digits]
 	index, err := strconv.Atoi(indexPart)
@@ -308,6 +302,31 @@ func (am AdrManager) ExtractAdrIndexFromFile(filename string) (int, error) {
 	return index, nil
 }
 
+func (am AdrManager) UpdateFilenameByTitle(filename string, logger *log.Logger) error {
+	adrInfos, err := data.LoadAdrInfo(logger, am.Config.Path, filename)
+	if err != nil {
+		logger.Printf("Error loading title from ADR: %v\n", err)
+		return errors.New(fmt.Sprintf("Error loading title from ADR: %v", err))
+	}
+
+	newFilename := constructFilenameFromIndexAndTitle(am.createIndexByNumber(adrInfos.Index, logger), strings.TrimSpace(adrInfos.Title))
+
+	if newFilename != filename {
+		from := path.Join(am.Config.Path, filename)
+		to := path.Join(am.Config.Path, newFilename)
+		logger.Printf("Renaming: %s -> %s\n", from, to)
+		err = os.Rename(from, to)
+		if err != nil {
+			logger.Printf("Could not rename file to '%s': %v\n", newFilename, err)
+			return errors.New(fmt.Sprintf("Could not rename file to '%s': %v\n", newFilename, err))
+		}
+
+		logger.Printf("Updated ADR filename: %s -> %s\n", filename, newFilename)
+	}
+
+	return nil
+}
+
 func (am AdrManager) createAdrFile(adrDirectory string, filename string, content *template.Template, data data.AdrVars) {
 
 	f, err := os.Create(filepath.Join(adrDirectory, filename))
@@ -315,18 +334,13 @@ func (am AdrManager) createAdrFile(adrDirectory string, filename string, content
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	defer f.Close()
 
-	// _, err2 := f.WriteString(content)
 	err2 := content.Execute(f, data)
 
 	if err2 != nil {
 		log.Fatal(err2)
 	}
-
-	// 	let toc = generate('toc', { output: false })
-	// 	fs.writeFileSync(savePath + 'README.md', toc + '\n')
 }
 
 func createDateString() string {

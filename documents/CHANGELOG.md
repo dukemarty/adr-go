@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [1.2.0] - 2023-09-29
+
+### Added
+
+- New commands: serve, update
+- Markdown as export format.
+
+### Changed
+
+- Status in list command is shown in color.
+- Added logo to HTML export template .
+
 ## [1.1.0] - 2023-08-31
 
 ### Added
@@ -23,8 +35,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Commands: init, create, list, logs
 
 
-## [0.1.0] - 2023-irgendwann
+## [0.1.0] - 2023-05-18
 
-### Added
-
-COMMANDS?!
+Initial release, with some basic functionality.

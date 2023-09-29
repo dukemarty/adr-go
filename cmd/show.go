@@ -16,6 +16,7 @@ import (
 )
 
 var availableDocuments = []string{"Changelog", "License"}
+var availableDocumentsForCheck = []string{"Changelog", "License", "CHANGELOG", "LICENSE", "changelog", "license"}
 
 // changelogCmd represents the changelog command
 var showCmd = &cobra.Command{
@@ -35,7 +36,7 @@ var showCmd = &cobra.Command{
 	If no document type is provided, _with_ the create flag all files are stored.
 	Without the flag, an interactive prompt is show to the user for selecting
 	which document he wants to see.`, availableDocuments),
-	ValidArgs: availableDocuments,
+	ValidArgs: availableDocumentsForCheck,
 	Args:      cobra.MatchAll(cobra.RangeArgs(0, 1), cobra.OnlyValidArgs),
 
 	Run: func(cmd *cobra.Command, args []string) {

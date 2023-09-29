@@ -68,8 +68,6 @@ func showMainSiteHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func adrHandler(w http.ResponseWriter, r *http.Request) {
-	// parts := strings.Split(r.URL., ("/"))
-	fmt.Fprintf(w, "ADR-URL = %q\n", r.URL)
 
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) != 3 {

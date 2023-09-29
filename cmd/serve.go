@@ -49,8 +49,8 @@ Additionally, endpoints are provided to get a list of the available ADRs
 func init() {
 	rootCmd.AddCommand(serveCmd)
 
-	serveCmd.Flags().StringP("address", "a", "localhost", "blabla")
-	serveCmd.Flags().Uint16P("port", "p", 8080, "blabla")
+	serveCmd.Flags().StringP("address", "a", "localhost", "adress (IP or localhost) to which to bind the server")
+	serveCmd.Flags().Uint16P("port", "p", 8080, "port to which to bind the server")
 }
 
 func showMainSiteHandler(w http.ResponseWriter, r *http.Request) {

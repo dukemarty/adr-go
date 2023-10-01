@@ -20,6 +20,7 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         goos: linux
         goarch: amd64
+        ldflags: -s -w
         
   release-windows:
     permissions: write-all
@@ -32,4 +33,5 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         goos: windows
         goarch: amd64
+        ldflags: -s -w
         

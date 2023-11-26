@@ -1,3 +1,5 @@
+<meta name="google-site-verification" content="P-ChZejwkshKxAHqN1f7JrPL4o-a5btgXdg7FM0jieo" />
+
 ![adr-go logo image](adr-go-logo.png)
 
 # adr-go

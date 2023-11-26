@@ -1,4 +1,12 @@
 <meta name="google-site-verification" content="P-ChZejwkshKxAHqN1f7JrPL4o-a5btgXdg7FM0jieo" />
+<!--
+  browser: adr-go
+  tracker: P-ChZejwkshKxAHqN1f7JrPL4o-a5btgXdg7FM0jieo
+  version: 3.0.0
+  updated: 2023-11-07T20:42:12Z
+  contact: Martin Lösch
+  options: commentable
+-->
 
 ![adr-go logo image](adr-go-logo.png)
 
